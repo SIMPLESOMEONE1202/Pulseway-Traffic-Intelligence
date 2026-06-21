@@ -1,0 +1,16 @@
+{
+  "job_id": "demo8f12c4a1",
+  "video_meta": {"fps": 30, "frames_processed": 1800, "duration_sec": 60, "resolution": "1280x720", "avg_inference_ms": 18.4, "detector": "yolo"},
+  "vehicle_counts": {"car": 142, "truck": 9, "bus": 3, "motorcycle": 21, "bicycle": 4, "person": 37},
+  "congestion": {
+    "current_score": 62,
+    "current_level": "MODERATE",
+    "observed": [{"timestamp_sec": 0, "score": 38}, {"timestamp_sec": 30, "score": 51}, {"timestamp_sec": 60, "score": 62}],
+    "predicted_trend": [{"t_minutes": 1, "score": 65}, {"t_minutes": 3, "score": 71}, {"t_minutes": 5, "score": 74}]
+  },
+  "lanes": [{"lane": 1, "count": 12, "avg_speed_kmh": 34.2}, {"lane": 2, "count": 18, "avg_speed_kmh": 21.7}],
+  "incidents": [{"track_id": 88, "type": "stalled_vehicle", "timestamp_sec": 42.3, "lane": 2}],
+  "speed": {"avg_kmh": 28.4, "calibration": "estimated_meters_per_pixel=0.05; calibrate per camera for measured speed"},
+  "signal_recommendation": {"phase": "approach_2_green", "green_time_sec": 38, "reason": "Lane 2 has the highest observed demand"},
+  "media": {"video_url": "/jobs/demo8f12c4a1/video", "heatmap_url": "/jobs/demo8f12c4a1/heatmap", "bev_url": "/jobs/demo8f12c4a1/bev", "metrics_url": "/jobs/demo8f12c4a1/metrics"}
+}
