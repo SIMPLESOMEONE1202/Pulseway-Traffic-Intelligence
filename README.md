@@ -15,6 +15,344 @@ An end-to-end traffic video analytics platform. Upload road footage, process it 
 - Responsive React dashboard with upload, processing, and results states
 - Unit/API tests and Docker Compose packaging
 
+# 🏗️ SYSTEM ARCHITECTURE
+
+```mermaid
+flowchart LR
+
+User[Traffic Analyst]
+
+subgraph Frontend
+Dashboard[React Dashboard]
+end
+
+subgraph Backend
+FastAPI[FastAPI API]
+Jobs[Background Job Manager]
+SQLite[(SQLite Database)]
+end
+
+subgraph CVPipeline
+Detector[YOLO / Motion Detector]
+Tracker[Kalman + IOU Tracker]
+Analytics[Traffic Analytics Engine]
+Forecast[Congestion Forecast Engine]
+end
+
+subgraph Outputs
+Video[Annotated Video]
+Heatmap[Density Heatmap]
+BEV[Top Down Projection]
+CSV[Metrics CSV]
+end
+
+User --> Dashboard
+
+Dashboard --> FastAPI
+
+FastAPI --> Jobs
+
+Jobs --> Detector
+
+Detector --> Tracker
+
+Tracker --> Analytics
+
+Analytics --> Forecast
+
+Forecast --> SQLite
+
+Analytics --> Video
+Analytics --> Heatmap
+Analytics --> BEV
+Analytics --> CSV
+
+SQLite --> Dashboard
+```
+
+---
+
+# 🔄 END-TO-END PROCESSING PIPELINE
+
+```mermaid
+flowchart TD
+
+A[Upload Video]
+
+A --> B[FastAPI Upload Endpoint]
+
+B --> C[Store Job]
+
+C --> D[Background Worker]
+
+D --> E[Frame Extraction]
+
+E --> F[Vehicle Detection]
+
+F --> G[Object Tracking]
+
+G --> H[Traffic Analytics]
+
+H --> I[Forecasting]
+
+I --> J[Generate Outputs]
+
+J --> K[Store Results]
+
+K --> L[Dashboard Visualization]
+```
+
+---
+
+# ⚡ API WORKFLOW SEQUENCE
+
+```mermaid
+sequenceDiagram
+
+participant User
+participant Frontend
+participant FastAPI
+participant Worker
+participant SQLite
+
+User->>Frontend: Upload Video
+
+Frontend->>FastAPI: POST /upload
+
+FastAPI->>SQLite: Create Job
+
+FastAPI-->>Frontend: job_id
+
+Frontend->>FastAPI: Poll Status
+
+FastAPI->>SQLite: Read Job State
+
+SQLite-->>FastAPI: Processing
+
+FastAPI-->>Frontend: Processing
+
+Worker->>SQLite: Update Results
+
+Frontend->>FastAPI: GET Results
+
+FastAPI-->>Frontend: Analytics Payload
+```
+
+---
+
+# 🚗 DETECTION & TRACKING PIPELINE
+
+```mermaid
+flowchart LR
+
+Frame[Video Frame]
+
+Frame --> Detector[YOLO Detection]
+
+Detector --> Vehicles[Vehicle Bounding Boxes]
+
+Vehicles --> Tracker[Kalman + IOU Tracker]
+
+Tracker --> IDs[Persistent IDs]
+
+IDs --> Analytics[Traffic Metrics]
+```
+
+---
+
+# 📊 TRAFFIC ANALYTICS ENGINE
+
+```mermaid
+flowchart TD
+
+Tracks[Tracked Vehicles]
+
+Tracks --> Counts[Vehicle Counts]
+
+Tracks --> Speed[Speed Estimation]
+
+Tracks --> Density[Traffic Density]
+
+Tracks --> Lanes[Lane Pressure]
+
+Tracks --> Stall[Stalled Vehicle Detection]
+
+Counts --> Congestion
+
+Speed --> Congestion
+
+Density --> Congestion
+
+Lanes --> Congestion
+
+Congestion[Congestion Score]
+```
+
+---
+
+# 📈 CONGESTION FORECASTING PIPELINE
+
+```mermaid
+flowchart LR
+
+Historical[Historical Scores]
+
+Historical --> Rolling[Rolling Window]
+
+Rolling --> Linear[Linear Regression]
+
+Linear --> F1[1 Minute Forecast]
+
+Linear --> F3[3 Minute Forecast]
+
+Linear --> F5[5 Minute Forecast]
+
+F1 --> Dashboard
+
+F3 --> Dashboard
+
+F5 --> Dashboard
+```
+
+---
+
+# 🚨 INCIDENT DETECTION WORKFLOW
+
+```mermaid
+flowchart TD
+
+Vehicle[Tracked Vehicle]
+
+Vehicle --> Moving{Moving?}
+
+Moving -->|Yes| Continue[Normal Tracking]
+
+Moving -->|No| Timer[Stall Timer]
+
+Timer --> Threshold{Threshold Exceeded?}
+
+Threshold -->|No| Continue
+
+Threshold -->|Yes| Alert[Generate Alert]
+
+Alert --> Dashboard[Dashboard Warning]
+```
+
+---
+
+# 📂 OUTPUT GENERATION PIPELINE
+
+```mermaid
+flowchart LR
+
+Analytics[Analytics Engine]
+
+Analytics --> Annotated[Annotated MP4]
+
+Analytics --> Heatmap[Density Heatmap]
+
+Analytics --> BEV[Top Down Projection]
+
+Analytics --> CSV[Metrics CSV]
+
+Annotated --> Results
+
+Heatmap --> Results
+
+BEV --> Results
+
+CSV --> Results
+```
+
+---
+
+# 🗄️ DATABASE & JOB STATE FLOW
+
+```mermaid
+flowchart TD
+
+Upload[New Upload]
+
+Upload --> Queued[Queued]
+
+Queued --> Processing[Processing]
+
+Processing --> Complete[Completed]
+
+Processing --> Failed[Failed]
+
+Complete --> Results[Results Available]
+
+Results --> SQLite[(SQLite Storage)]
+```
+
+---
+
+# 📂 PROJECT STRUCTURE ARCHITECTURE
+
+```mermaid
+flowchart TB
+
+Root[Pulseway Traffic Intelligence]
+
+Root --> Frontend[React Frontend]
+
+Frontend --> Upload[Upload UI]
+Frontend --> Dashboard[Analytics Dashboard]
+
+Root --> Backend[FastAPI Backend]
+
+Backend --> API[API Routes]
+Backend --> Jobs[Background Workers]
+Backend --> DB[SQLite]
+
+Root --> CV[Computer Vision Engine]
+
+CV --> Detector[YOLO Detector]
+CV --> Tracker[Tracker]
+CV --> Analytics[Analytics]
+
+Root --> Forecast[Forecasting Engine]
+
+Root --> Outputs[Output Generator]
+
+Outputs --> Video[Annotated Video]
+Outputs --> Heatmap[Heatmap]
+Outputs --> BEV[Top Down View]
+Outputs --> CSV[Metrics]
+```
+
+---
+
+# 🚀 PRODUCTION-SCALE ARCHITECTURE
+
+```mermaid
+flowchart LR
+
+Users[Users]
+
+Users --> LoadBalancer
+
+LoadBalancer --> React[React Frontend]
+
+React --> FastAPI[FastAPI Cluster]
+
+FastAPI --> Redis[Redis Queue]
+
+Redis --> Workers[Celery Workers]
+
+Workers --> ObjectStorage[S3 Storage]
+
+Workers --> PostgreSQL
+
+Workers --> CVEngine[CV Processing Cluster]
+
+CVEngine --> Results[Analytics Results]
+
+Results --> Dashboard
+```
+
+
 ## Local development
 
 Requirements: Python 3.10+, Node.js 20+, and an OpenCV-supported video codec.
